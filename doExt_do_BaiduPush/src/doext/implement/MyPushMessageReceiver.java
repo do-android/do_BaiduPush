@@ -41,6 +41,7 @@ import doext.app.do_BaiduPush_App;
  * 当您遇到以上返回错误时，如果解释不了您的问题，请用同一请求的返回值requestId和errorCode联系我们追查问题。
  * 
  */
+@SuppressLint("SimpleDateFormat")
 public class MyPushMessageReceiver extends FrontiaPushMessageReceiver {
     /** TAG to Log */
     public static final String TAG = MyPushMessageReceiver.class
@@ -334,7 +335,6 @@ public class MyPushMessageReceiver extends FrontiaPushMessageReceiver {
         //updateContent(context, responseString);
     }
 
-    @SuppressLint("SimpleDateFormat")
 	private void updateContent(Context context, String content) {
         Log.d(TAG, "updateContent");
         String logText = "" + Utils.logStringCache;
