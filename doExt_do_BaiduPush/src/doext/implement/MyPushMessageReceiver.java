@@ -3,17 +3,23 @@ package doext.implement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
 import org.json.JSONObject;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.baidu.frontia.api.FrontiaPushMessageReceiver;
+
 import core.DoServiceContainer;
 import core.object.DoInvokeResult;
 import core.object.DoModule;
@@ -202,26 +208,20 @@ public class MyPushMessageReceiver extends FrontiaPushMessageReceiver {
     
     
     private void wakeUpApp(Context context,String customContentString) throws NameNotFoundException {
-    	PackageInfo pi = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-    	Intent resolveIntent = new Intent(Intent.ACTION_MAIN, null);
+    	Intent resolveIntent = new Intent(Intent.ACTION_MAIN);
     	resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-    	resolveIntent.setPackage(pi.packageName);
-    	List<ResolveInfo> apps = context.getPackageManager().queryIntentActivities(resolveIntent, 0);
+    	resolveIntent.setPackage(context.getPackageName());
+		List<ResolveInfo> apps = context.getPackageManager().queryIntentActivities(resolveIntent, 0);
+		if(apps.size() == 0) {
+			return;
+		}
     	ResolveInfo ri = apps.iterator().next();
-    	if (ri != null ) {
-	    	String packageName = ri.activityInfo.packageName;
-	    	String className =  ri.activityInfo.name;
-	    	Activity currentActivity = DoServiceContainer.getPageViewFactory().getAppContext();
-	    	Intent intent = new Intent();
-	    	if(currentActivity != null) {
-	    		className = currentActivity.getClass().getName();
-	    	}
-	    	intent.addCategory(Intent.CATEGORY_LAUNCHER);
-	    	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-	    	intent.putExtra("pushContent", customContentString);
-	    	intent.setClassName(packageName, className);
-	    	context.getApplicationContext().startActivity(intent);
-    	}
+    	String packageName = ri.activityInfo.packageName;
+    	String className = ri.activityInfo.name;
+    	Intent intent = new Intent(resolveIntent);
+    	intent.setComponent(new ComponentName(packageName, className));
+    	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+    	context.startActivity(intent);
 	}
 
     /**
