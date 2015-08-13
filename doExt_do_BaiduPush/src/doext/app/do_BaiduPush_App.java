@@ -31,4 +31,10 @@ public class do_BaiduPush_App implements DoIAppDelegate {
 	public String getModuleTypeID() {
 		return "do_BaiduPush";
 	}
+
+	@Override
+	public String getTypeID() {
+		// TODO Auto-generated method stub
+		return getModuleTypeID();
+	}
 }
