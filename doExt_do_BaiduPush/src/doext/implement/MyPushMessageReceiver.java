@@ -206,22 +206,23 @@ public class MyPushMessageReceiver extends FrontiaPushMessageReceiver {
        // updateContent(context, notifyString);
     }
     
-    
     private void wakeUpApp(Context context,String customContentString) throws NameNotFoundException {
-    	Intent resolveIntent = new Intent(Intent.ACTION_MAIN);
+    	Intent resolveIntent = new Intent(Intent.ACTION_MAIN, null);
     	resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
     	resolveIntent.setPackage(context.getPackageName());
 		List<ResolveInfo> apps = context.getPackageManager().queryIntentActivities(resolveIntent, 0);
-		if(apps.size() == 0) {
-			return;
+		if(apps.size() != 0){
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+	    	ResolveInfo ri = apps.iterator().next();
+	    	String packageName = ri.activityInfo.packageName;
+	    	String className = ri.activityInfo.name;
+	    	ComponentName cn = new ComponentName(packageName, className);
+	    	intent.addCategory(Intent.CATEGORY_LAUNCHER);
+	    	intent.setComponent(cn);
+	    	intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	    	intent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+	    	context.startActivity(intent);
 		}
-    	ResolveInfo ri = apps.iterator().next();
-    	String packageName = ri.activityInfo.packageName;
-    	String className = ri.activityInfo.name;
-    	Intent intent = new Intent(resolveIntent);
-    	intent.setComponent(new ComponentName(packageName, className));
-    	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-    	context.startActivity(intent);
 	}
 
     /**
