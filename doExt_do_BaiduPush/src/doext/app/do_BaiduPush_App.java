@@ -1,5 +1,4 @@
 package doext.app;
-import com.baidu.frontia.FrontiaApplication;
 
 import android.content.Context;
 import core.interfaces.DoIAppDelegate;
@@ -25,7 +24,6 @@ public class do_BaiduPush_App implements DoIAppDelegate {
 	
 	@Override
 	public void onCreate(Context context) {
-		FrontiaApplication.initFrontiaApplication(context);
 	}
 	
 	public String getModuleTypeID() {

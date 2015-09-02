@@ -7,18 +7,15 @@ import java.util.List;
 import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.baidu.frontia.api.FrontiaPushMessageReceiver;
+import com.baidu.android.pushservice.PushMessageReceiver;
 
 import core.DoServiceContainer;
 import core.object.DoInvokeResult;
@@ -48,7 +45,7 @@ import doext.app.do_BaiduPush_App;
  * 
  */
 @SuppressLint("SimpleDateFormat")
-public class MyPushMessageReceiver extends FrontiaPushMessageReceiver {
+public class MyPushMessageReceiver extends PushMessageReceiver {
     /** TAG to Log */
     public static final String TAG = MyPushMessageReceiver.class
             .getSimpleName();
@@ -153,6 +150,47 @@ public class MyPushMessageReceiver extends FrontiaPushMessageReceiver {
 		}
         //updateContent(context, messageString);
     }
+    
+    /**
+     * 接收通知到达的函数。
+     *
+     * @param context
+     *            上下文
+     * @param title
+     *            推送的通知的标题
+     * @param description
+     *            推送的通知的描述
+     * @param customContentString
+     *            自定义内容，为空或者json字符串
+     */
+
+    @Override
+    public void onNotificationArrived(Context context, String title,
+            String description, String customContentString) {
+
+        String notifyString = "onNotificationArrived  title=\"" + title
+                + "\" description=\"" + description + "\" customContent="
+                + customContentString;
+        Log.d(TAG, notifyString);
+
+        // 自定义内容获取方式，mykey和myvalue对应通知推送时自定义内容中设置的键和值
+        /*if (!TextUtils.isEmpty(customContentString)) {
+            JSONObject customJson = null;
+            try {
+                customJson = new JSONObject(customContentString);
+                String myvalue = null;
+                if (!customJson.isNull("mykey")) {
+                    myvalue = customJson.getString("mykey");
+                }
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }*/
+        // Demo更新界面展示代码，应用请在这里加入自己的处理逻辑
+        // 你可以參考 onNotificationClicked中的提示从自定义内容获取具体值
+       // updateContent(context, notifyString);
+    }
 
     /**
      * 接收通知点击的函数。注：推送通知被用户点击前，应用无法通过接口获取通知的内容。
@@ -189,24 +227,25 @@ public class MyPushMessageReceiver extends FrontiaPushMessageReceiver {
         }*/
         // Demo更新界面展示代码，应用请在这里加入自己的处理逻辑
         try {
-        	String typeId = do_BaiduPush_App.getInstance().getModuleTypeID();
-			DoModule module = DoServiceContainer.getSingletonModuleFactory().getSingletonModuleByID(null, typeId);
-			DoInvokeResult jsonResult = new DoInvokeResult(module.getUniqueKey());
-			JSONObject json = new JSONObject();
+        	JSONObject json = new JSONObject();
 			json.put("title", title);
 			json.put("description", description);
 			json.put("customContent", customContentString);
-			jsonResult.setResultNode(json);
+        	wakeUpApp(context);
+        	Log.d(TAG, "-------------------------wake up app!");
+        	String typeId = do_BaiduPush_App.getInstance().getModuleTypeID();
+        	DoModule module = DoServiceContainer.getSingletonModuleFactory().getSingletonModuleByID(null, typeId);
+        	DoInvokeResult jsonResult = new DoInvokeResult(module.getUniqueKey());
+        	jsonResult.setResultNode(json);
 			module.getEventCenter().fireEvent("notificationClicked", jsonResult);
-			wakeUpApp(context, customContentString);
 		} catch (Exception e) {
-			DoServiceContainer.getLogEngine().writeError("doBaiduPush=> notificationClicked", e);
+			//DoServiceContainer.getLogEngine().writeError("doBaiduPush=> notificationClicked", e);
 			e.printStackTrace();
 		}
        // updateContent(context, notifyString);
     }
     
-    private void wakeUpApp(Context context,String customContentString) throws NameNotFoundException {
+    private void wakeUpApp(Context context) throws NameNotFoundException {
     	Intent resolveIntent = new Intent(Intent.ACTION_MAIN, null);
     	resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
     	resolveIntent.setPackage(context.getPackageName());
@@ -356,5 +395,7 @@ public class MyPushMessageReceiver extends FrontiaPushMessageReceiver {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.getApplicationContext().startActivity(intent);
     }
+
+	
 
 }
