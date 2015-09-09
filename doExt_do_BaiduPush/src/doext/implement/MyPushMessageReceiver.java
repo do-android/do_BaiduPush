@@ -18,6 +18,7 @@ import android.util.Log;
 import com.baidu.android.pushservice.PushMessageReceiver;
 
 import core.DoServiceContainer;
+import core.helper.DoJsonHelper;
 import core.object.DoInvokeResult;
 import core.object.DoModule;
 import doext.app.do_BaiduPush_App;
@@ -231,7 +232,7 @@ public class MyPushMessageReceiver extends PushMessageReceiver {
 			json.put("title", title);
 			json.put("description", description);
 			json.put("customContent", customContentString);
-        	wakeUpApp(context);
+        	wakeUpApp(context,json);
         	Log.d(TAG, "-------------------------wake up app!");
         	String typeId = do_BaiduPush_App.getInstance().getModuleTypeID();
         	DoModule module = DoServiceContainer.getSingletonModuleFactory().getSingletonModuleByID(null, typeId);
@@ -245,7 +246,7 @@ public class MyPushMessageReceiver extends PushMessageReceiver {
        // updateContent(context, notifyString);
     }
     
-    private void wakeUpApp(Context context) throws NameNotFoundException {
+    private void wakeUpApp(Context context, JSONObject json) throws NameNotFoundException {
     	Intent resolveIntent = new Intent(Intent.ACTION_MAIN, null);
     	resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
     	resolveIntent.setPackage(context.getPackageName());
@@ -260,6 +261,7 @@ public class MyPushMessageReceiver extends PushMessageReceiver {
 	    	intent.setComponent(cn);
 	    	intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 	    	intent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+	    	intent.putExtra("pushData", DoJsonHelper.getText(json, ""));
 	    	context.startActivity(intent);
 		}
 	}
