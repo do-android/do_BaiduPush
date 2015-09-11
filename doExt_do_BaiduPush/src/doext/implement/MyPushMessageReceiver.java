@@ -19,6 +19,7 @@ import com.baidu.android.pushservice.PushMessageReceiver;
 
 import core.DoServiceContainer;
 import core.helper.DoJsonHelper;
+import core.interfaces.DoISingletonModuleFactory;
 import core.object.DoInvokeResult;
 import core.object.DoModule;
 import doext.app.do_BaiduPush_App;
@@ -235,12 +236,17 @@ public class MyPushMessageReceiver extends PushMessageReceiver {
         	wakeUpApp(context,json);
         	Log.d(TAG, "-------------------------wake up app!");
         	String typeId = do_BaiduPush_App.getInstance().getModuleTypeID();
-        	DoModule module = DoServiceContainer.getSingletonModuleFactory().getSingletonModuleByID(null, typeId);
-        	DoInvokeResult jsonResult = new DoInvokeResult(module.getUniqueKey());
-        	jsonResult.setResultNode(json);
-			module.getEventCenter().fireEvent("notificationClicked", jsonResult);
+        	DoISingletonModuleFactory smFactory = DoServiceContainer.getSingletonModuleFactory();
+        	Log.d(TAG, "DoISingletonModuleFactory= " + smFactory);
+        	if(null != smFactory){
+	        	DoModule module = DoServiceContainer.getSingletonModuleFactory().getSingletonModuleByID(null, typeId);
+	        	DoInvokeResult jsonResult = new DoInvokeResult(module.getUniqueKey());
+	        	jsonResult.setResultNode(json);
+				module.getEventCenter().fireEvent("notificationClicked", jsonResult);
+        	}else{
+        		Log.d(TAG, "-------------------------app is kissed！");
+        	}
 		} catch (Exception e) {
-			//DoServiceContainer.getLogEngine().writeError("doBaiduPush=> notificationClicked", e);
 			e.printStackTrace();
 		}
        // updateContent(context, notifyString);
@@ -251,7 +257,9 @@ public class MyPushMessageReceiver extends PushMessageReceiver {
     	resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
     	resolveIntent.setPackage(context.getPackageName());
 		List<ResolveInfo> apps = context.getPackageManager().queryIntentActivities(resolveIntent, 0);
+		String pushContent = DoJsonHelper.getText(json, "");
 		if(apps.size() != 0){
+			Log.d(TAG, "pushContent=" + pushContent);
 			Intent intent = new Intent(Intent.ACTION_MAIN);
 	    	ResolveInfo ri = apps.iterator().next();
 	    	String packageName = ri.activityInfo.packageName;
@@ -261,7 +269,7 @@ public class MyPushMessageReceiver extends PushMessageReceiver {
 	    	intent.setComponent(cn);
 	    	intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 	    	intent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-	    	intent.putExtra("pushData", DoJsonHelper.getText(json, ""));
+	    	intent.putExtra("pushData", pushContent);
 	    	context.startActivity(intent);
 		}
 	}
