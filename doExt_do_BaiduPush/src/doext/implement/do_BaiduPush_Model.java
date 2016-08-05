@@ -21,8 +21,8 @@ import doext.define.do_BaiduPush_IMethod;
  * 自定义扩展SM组件Model实现，继承DoSingletonModule抽象类，并实现do_BaiduPush_IMethod接口方法；
  * #如何调用组件自定义事件？可以通过如下方法触发事件：
  * this.model.getEventCenter().fireEvent(_messageName, jsonResult);
- * 参数解释：@_messageName字符串事件名称，@jsonResult传递事件参数对象；
- * 获取DoInvokeResult对象方式new DoInvokeResult(this.getUniqueKey());
+ * 参数解释：@_messageName字符串事件名称，@jsonResult传递事件参数对象； 获取DoInvokeResult对象方式new
+ * DoInvokeResult(this.getUniqueKey());
  */
 public class do_BaiduPush_Model extends DoSingletonModule implements do_BaiduPush_IMethod {
 
@@ -48,6 +48,14 @@ public class do_BaiduPush_Model extends DoSingletonModule implements do_BaiduPus
 			stopWork(_dictParas, _scriptEngine, _invokeResult);
 			return true;
 		}
+		if ("setTags".equals(_methodName)) {
+			setTags(_dictParas, _scriptEngine, _invokeResult);
+			return true;
+		}
+		if ("removeTags".equals(_methodName)) {
+			removeTags(_dictParas, _scriptEngine, _invokeResult);
+			return true;
+		}
 		return super.invokeSyncMethod(_methodName, _dictParas, _scriptEngine, _invokeResult);
 	}
 
@@ -67,14 +75,6 @@ public class do_BaiduPush_Model extends DoSingletonModule implements do_BaiduPus
 	@Override
 	public boolean invokeAsyncMethod(String _methodName, JSONObject _dictParas, DoIScriptEngine _scriptEngine, String _callbackFuncName) throws Exception {
 		// ...do something
-		if ("setTags".equals(_methodName)) {
-			this.setTags(_dictParas, _scriptEngine, _callbackFuncName);
-			return true;
-		}
-		if ("removeTags".equals(_methodName)) {
-			this.removeTags(_dictParas, _scriptEngine, _callbackFuncName);
-			return true;
-		}
 		return super.invokeAsyncMethod(_methodName, _dictParas, _scriptEngine, _callbackFuncName);
 	}
 
@@ -103,18 +103,6 @@ public class do_BaiduPush_Model extends DoSingletonModule implements do_BaiduPus
 		PushManager.stopWork(DoServiceContainer.getPageViewFactory().getAppContext());
 	}
 
-	@Override
-	public void setTags(JSONObject _dictParas, DoIScriptEngine _scriptEngine, String _callbackFuncName) throws Exception {
-		JSONArray _jsonArray = DoJsonHelper.getJSONArray(_dictParas, "tag");
-		PushManager.setTags(DoServiceContainer.getPageViewFactory().getAppContext(), getTags(_jsonArray));
-	}
-
-	@Override
-	public void removeTags(JSONObject _dictParas, DoIScriptEngine _scriptEngine, String _callbackFuncName) throws Exception {
-		JSONArray _jsonArray = DoJsonHelper.getJSONArray(_dictParas, "tag");
-		PushManager.delTags(DoServiceContainer.getPageViewFactory().getAppContext(), getTags(_jsonArray));
-	}
-
 	private List<String> getTags(JSONArray _jsonArray) {
 		List<String> tags = null;
 		if (_jsonArray != null && _jsonArray.length() > 0) {
@@ -126,5 +114,17 @@ public class do_BaiduPush_Model extends DoSingletonModule implements do_BaiduPus
 		}
 
 		return tags;
+	}
+
+	@Override
+	public void setTags(JSONObject _dictParas, DoIScriptEngine _scriptEngine, DoInvokeResult _invokeResult) throws Exception {
+		JSONArray _jsonArray = DoJsonHelper.getJSONArray(_dictParas, "tag");
+		PushManager.setTags(DoServiceContainer.getPageViewFactory().getAppContext(), getTags(_jsonArray));
+	}
+
+	@Override
+	public void removeTags(JSONObject _dictParas, DoIScriptEngine _scriptEngine, DoInvokeResult _invokeResult) throws Exception {
+		JSONArray _jsonArray = DoJsonHelper.getJSONArray(_dictParas, "tag");
+		PushManager.delTags(DoServiceContainer.getPageViewFactory().getAppContext(), getTags(_jsonArray));
 	}
 }
